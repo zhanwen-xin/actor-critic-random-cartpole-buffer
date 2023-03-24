@@ -78,3 +78,42 @@ Output:
 
 [500 rows x 3 columns]
 ```
+
+## Function to discretize state in CartPole-v1
+```
+def map_bin(state, bin_division):
+  """
+  Input: 
+    state (float): state to map, (1,)
+    bin_division (list): (9, )
+  output: map_index, (1, )
+  """
+  for i, max_val in enumerate(bin_division):
+    if state < max_val:
+      map_idx = i
+      break
+    map_idx = 9
+  return map_idx
+ 
+def discretize_state(state):
+    """
+    Input: state (list): state from gym environment, (4, )
+    output: discrete_state (list): one-hot encoded state, (40, )
+    """
+    discretize_mesh = np.zeros((40, ), dtype=int)
+
+    # map state to bins
+    position_idx = map_bin(state[0], np.linspace(-4.8, 4.8, num = 11)[1:-1])
+    velocity_idx = map_bin(state[1], [-0.58, -0.36, -0.2, -0.13, 0, 0.13, 0.2, 0.36, 0.58])
+    angle_idx = map_bin(state[2], np.linspace(-0.418, 0.418, num = 11)[1:-1])
+    angular_velocity_idx = map_bin(state[3], [-0.3, -0.2, -0.12, -0.05, 0.01, 0.07, 0.14, 0.22, 0.32])
+
+    discretize_mesh[position_idx] = 1
+    discretize_mesh[velocity_idx + 10] = 1
+    discretize_mesh[angle_idx + 20] = 1
+    discretize_mesh[angular_velocity_idx + 30] = 1
+
+    discretize_state = discretize_mesh
+
+    return discretize_state
+```
